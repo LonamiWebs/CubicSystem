@@ -5,8 +5,10 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
-#include "main.h"
 #include <iostream>
+
+#include "main.h"
+#include "shader.h"
 
 
 int main()
@@ -48,73 +50,20 @@ int main()
 
 	glViewport(0, 0, width, height);
 	
-	// Compile vertex shader and check for errors
-	GLuint vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER:VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Compile fragment shader and check for errors
-	GLuint fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Link shaders
-	GLuint shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Clean up resources
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
+	// Initialize our shader
+	Shader shader("../CubicSystem/shaders/shader.vert", "../CubicSystem/shaders/shader.frag");
 
 	// Set up vertex data and buffers
 	GLfloat vertices[] = {
-		 0.5f,  0.5f, 0.0f, // Top right
-		 0.5f, -0.5f, 0.0f, // Bottom right
-		-0.5f, -0.5f, 0.0f, // Bottom left
-		-0.5f,  0.5f, 0.0f, // Top left
-	};
-	// Triangles indices
-	GLuint indices[] = {
-		0, 1, 3,
-		1, 2, 3
+		// Positions         // Colors
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // Bottom right
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // Bottom left
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // Top 
 	};
 
-	GLuint VAO, VBO, EBO;
+	GLuint VAO, VBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 
 	// Bind our Vertex Array Object first, then bind and set the vertex buffers and attribute pointers
 	glBindVertexArray(VAO);
@@ -122,12 +71,12 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
 	// How to interpret vertex data
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+	
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 
 	// Unbind for safety reasons
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -145,9 +94,13 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Draw our objects
-		glUseProgram(shaderProgram);
+		shader.Use();
+
+		GLint offset = glGetUniformLocation(shader.Program, "offset");
+		glUniform3f(offset, sin(glfwGetTime() * 3) / 2, 0.0f, 0.0f);
+
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 
 		// Swap buffers
@@ -157,7 +110,6 @@ int main()
 	// Clean up resources
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
 
 	glfwTerminate();
 	return 0;
