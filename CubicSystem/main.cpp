@@ -20,6 +20,9 @@
 #include "shader.h"
 
 
+float fov = 45.0f;
+
+
 int main()
 {
     // Initialize GLFW and set all the required options
@@ -54,31 +57,63 @@ int main()
     }
 
     // Retrieve the dependant-platform width and height and set the viewport
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
+    int viewportWidth, viewportHeight;
+    glfwGetFramebufferSize(window, &viewportWidth, &viewportHeight);
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, viewportWidth, viewportHeight);
     
     // Initialize our shader
     Shader shader("../CubicSystem/shaders/shader.vert", "../CubicSystem/shaders/shader.frag");
 
     // Set up vertex data and buffers
     GLfloat vertices[] = {
-		// Positions          // Colors           // Texture coords (flipped Y)
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,   // Top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,   // Bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,   // Bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f    // Top left 
-    };
-	GLuint indices[] = {
-		0, 1, 3,
-		1, 2, 3
+		// Positions        // Texture coords (NOT flipped Y)
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-    GLuint VAO, VBO, EBO;
+    GLuint VAO, VBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 
     // Bind our Vertex Array Object first, then bind and set the vertex buffers and attribute pointers
     glBindVertexArray(VAO);
@@ -86,18 +121,12 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     // How to interpret vertex data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
 
     // Unbind for safety reasons
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -119,8 +148,9 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Do load image
-	unsigned char* image = SOIL_load_image("../CubicSystem/images/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	int imageWidth, imageHeight;
+	unsigned char* image = SOIL_load_image("../CubicSystem/images/container.jpg", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -136,12 +166,26 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Do load image
-	image = SOIL_load_image("../CubicSystem/images/awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	image = SOIL_load_image("../CubicSystem/images/awesomeface.png", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	glEnable(GL_DEPTH_TEST);
+
+	glm::vec3 cubePositions[] = {
+	  glm::vec3( 0.0f,  0.0f,  0.0f), 
+	  glm::vec3( 2.0f,  5.0f, -15.0f), 
+	  glm::vec3(-1.5f, -2.2f, -2.5f),  
+	  glm::vec3(-3.8f, -2.0f, -12.3f),  
+	  glm::vec3( 2.4f, -0.4f, -3.5f),  
+	  glm::vec3(-1.7f,  3.0f, -7.5f),  
+	  glm::vec3( 1.3f, -2.0f, -2.5f),  
+	  glm::vec3( 1.5f,  2.0f, -2.5f), 
+	  glm::vec3( 1.5f,  0.2f, -1.5f), 
+	  glm::vec3(-1.3f,  1.0f, -1.5f)  
+	};
 
     // Enter the game loop
     while (!glfwWindowShouldClose(window))
@@ -152,7 +196,7 @@ int main()
         // Render
         // Clear the color buffer
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw our objects
         shader.Use();
@@ -167,17 +211,30 @@ int main()
 
         glBindVertexArray(VAO);
 
-		glm::mat4 trans;
-		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 1.0f));
-		trans = glm::rotate(trans, (GLfloat)glfwGetTime() + (GLfloat)sin(glfwGetTime()) / 2.0f + 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
-		glUniformMatrix4fv(shader.GetUniform("transform"), 1, GL_FALSE, glm::value_ptr(trans));
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		trans = glm::mat4();
-		trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 1.0f));
-		trans = glm::scale(trans, glm::vec3(sin(glfwGetTime() * 2 / (sin(glfwGetTime()) / 2 + 1.5f))));
-		glUniformMatrix4fv(shader.GetUniform("transform"), 1, GL_FALSE, glm::value_ptr(trans));
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glm::mat4 projection;
+		projection = glm::perspective(glm::radians(fov), viewportWidth / (GLfloat)viewportHeight, 0.1f, 100.0f);
+		glUniformMatrix4fv(shader.GetUniform("projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+		GLfloat radius = 8.0f;
+		GLfloat camX = sin(glfwGetTime()) * radius;
+		GLfloat camZ = cos(glfwGetTime()) * radius;
+
+		glm::mat4 view;
+		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(shader.GetUniform("view"), 1, GL_FALSE, glm::value_ptr(view));
+
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 model;
+			model = glm::translate(model, cubePositions[i]);
+			GLfloat angle = 20.0f * i;
+			model = glm::rotate(model, (GLfloat)glfwGetTime() * (GLfloat)sin(i + 1) + angle, glm::vec3(1.0f, 0.3f, 0.5f));
+
+			glUniformMatrix4fv(shader.GetUniform("model"), 1, GL_FALSE, glm::value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
 
         glBindVertexArray(0);
 
@@ -199,4 +256,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
+	if (key == GLFW_KEY_KP_ADD)
+	{
+		fov += 3;
+	}
+	if (key == GLFW_KEY_KP_SUBTRACT)
+	{
+		fov -= 3;
+	}
 }
