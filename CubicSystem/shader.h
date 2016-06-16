@@ -16,6 +16,6 @@ public:
     Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
     // Uses the shader (setting the program as active)
     void Use();
-	// Gets an uniform
-	GLint GetUniform(const GLchar* name);
+    // Gets an uniform
+    GLint GetUniform(const GLchar* name);
 };
