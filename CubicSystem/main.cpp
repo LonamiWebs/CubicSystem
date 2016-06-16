@@ -20,40 +20,37 @@
 #include "shader.h"
 #include "camera.h"
 
-
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-
-void do_movement();
-
-GLfloat deltaTime, lastFrame;
-GLfloat lastX = 400, lastY = 300;
 
 int main()
 {
+    using namespace std;
+    using namespace glm;
+
     // Initialize GLFW and set required options
-    std::cout << "Initializing GLFW, setting required options..." << std::endl;
+    cout << "Initializing GLFW, setting required options..." << endl;
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    #ifdef MACOS
+#ifdef MACOS
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
+#endif
 
     // Create a new window and set it as current context
-    std::cout << "Creating a new window and setting it as current context..." << std::endl;
+    cout << "Creating a new window and setting it as current context..." << endl;
     GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, nullptr, nullptr);
     if (window == nullptr)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        cout << "Failed to create GLFW window" << endl;
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
 
     // Register callbacks
-    std::cout << "Registering callbacks..." << std::endl;
+    cout << "Registering callbacks..." << endl;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glfwSetKeyCallback(window, key_callback);
@@ -61,156 +58,120 @@ int main()
     glfwSetScrollCallback(window, scroll_callback);
 
     // Enable GLEW experimental and initialize GLEW to setup OpenGL function pointers
-    std::cout << "Initializing GLEW..." << std::endl;
+    cout << "Initializing GLEW..." << endl;
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
-        std::cout << "Failed to initialize GLEW" << std::endl;
+        cout << "Failed to initialize GLEW" << endl;
         return -1;
     }
 
     // Retrieve the dependant-platform width and height and set the viewport
-    std::cout << "Setting viewport..." << std::endl;
+    cout << "Setting viewport..." << endl;
     int viewportWidth, viewportHeight;
     glfwGetFramebufferSize(window, &viewportWidth, &viewportHeight);
 
     glViewport(0, 0, viewportWidth, viewportHeight);
-    
+    glEnable(GL_DEPTH_TEST);
+
     // Initialize our shader
-    std::cout << "Loading shaders..." << std::endl;
+    cout << "Loading shaders..." << endl;
     Shader shader("../CubicSystem/shaders/shader.vert", "../CubicSystem/shaders/shader.frag");
+    cout << "Loading lamp shaders..." << endl;
+    Shader lampShader("../CubicSystem/shaders/shader.vert", "../CubicSystem/shaders/lamp_shader.frag");
 
     // Set up vertex data and buffers
-    std::cout << "Setting up vertex data and buffers.." << std::endl;
+    cout << "Setting up vertex data and buffers.." << endl;
     GLfloat vertices[] = {
-        // Positions        // Texture coords (NOT flipped Y)
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        // Positions          Normals
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
-    GLuint VAO, VBO;
-    glGenVertexArrays(1, &VAO);
+    GLuint containerVAO, VBO;
+    glGenVertexArrays(1, &containerVAO);
     glGenBuffers(1, &VBO);
 
     // Bind our Vertex Array Object first, then bind and set the vertex buffers and attribute pointers
-    glBindVertexArray(VAO);
+    glBindVertexArray(containerVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // How to interpret vertex data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
     // Unbind for safety reasons
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // Load texture
-    std::cout << "Loading textures..." << std::endl;
-    GLuint texture1, texture2;
-    glGenTextures(1, &texture1);
-    glGenTextures(1, &texture2);
+    // Do the same for the light
+    GLuint lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
 
-    // First texture
-    glBindTexture(GL_TEXTURE_2D, texture1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // No need to copy the data again, as we already did it before
 
-    // Set wrapping and filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Do load image
-    int imageWidth, imageHeight;
-    unsigned char* image = SOIL_load_image("../CubicSystem/images/container.jpg", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(image);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Second texture
-    glBindTexture(GL_TEXTURE_2D, texture2);
-
-    // Set wrapping and filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Do load image
-    image = SOIL_load_image("../CubicSystem/images/awesomeface.png", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(image);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glEnable(GL_DEPTH_TEST);
-
-    glm::vec3 cubePositions[] = {
-      glm::vec3( 0.0f,  0.0f,  0.0f), 
-      glm::vec3( 2.0f,  5.0f, -15.0f), 
-      glm::vec3(-1.5f, -2.2f, -2.5f),  
-      glm::vec3(-3.8f, -2.0f, -12.3f),  
-      glm::vec3( 2.4f, -0.4f, -3.5f),  
-      glm::vec3(-1.7f,  3.0f, -7.5f),  
-      glm::vec3( 1.3f, -2.0f, -2.5f),  
-      glm::vec3( 1.5f,  2.0f, -2.5f), 
-      glm::vec3( 1.5f,  0.2f, -1.5f), 
-      glm::vec3(-1.3f,  1.0f, -1.5f)  
-    };
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     // Enter the game loop
-    std::cout << "Game started!" << std::endl;
+    cout << "Game started!" << endl;
+
+    // Keep in mind that anything that doesn't change (i.e. a position)
+    // can be outside the game loop for a huge performance improvement.
     while (!glfwWindowShouldClose(window))
     {
         GLfloat currentTime = glfwGetTime();
-        deltaTime = currentTime - lastFrame;
-        lastFrame = currentTime;
+        deltaTime = currentTime - last.Frame;
+        last.Frame = currentTime;
 
         // Poll events such as key pressed or mouse moved
         glfwPollEvents();
@@ -218,40 +179,51 @@ int main()
 
         // Render
         // Clear the color buffer
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+        GLfloat radius = 4.0f;
+        GLfloat lightSpeed = 0.5f; // No, not that light speed
+        vec3 lightPos;
+        lightPos.x = cos(glfwGetTime() * lightSpeed) * radius;
+        lightPos.y = 1.2f;
+        lightPos.z = sin(glfwGetTime() * lightSpeed) * radius;
 
         // Draw our objects
         shader.Use();
+        glUniform3f(shader.GetUniform("objectColor"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(shader.GetUniform("lightColor"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glUniform1i(shader.GetUniform("texture1"), 0);
+        glUniform3f(shader.GetUniform("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
-        glUniform1i(shader.GetUniform("texture2"), 1);
+        // Create camera transformations
+        mat4 view = camera.GetViewMatrix();
+        mat4 projection = perspective(camera.Zoom, viewportWidth / (GLfloat)viewportHeight, 0.1f, 100.0f);
+        mat4 model; // Identity (don't perform any operation)
 
+                    // Set them and draw
+        glUniformMatrix4fv(shader.GetUniform("projection"), 1, GL_FALSE, value_ptr(projection));
+        glUniformMatrix4fv(shader.GetUniform("view"), 1, GL_FALSE, value_ptr(view));
+        glUniformMatrix4fv(shader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
+        glBindVertexArray(containerVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
 
-		glm::mat4 projection = glm::perspective(camera.Zoom, viewportWidth / (GLfloat)viewportHeight, 0.1f, 1000.0f);
+        // Draw lamp
+        lampShader.Use();
 
-		glUniformMatrix4fv(shader.GetUniform("view"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
-		glUniformMatrix4fv(shader.GetUniform("projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(lampShader.GetUniform("projection"), 1, GL_FALSE, value_ptr(projection));
+        glUniformMatrix4fv(lampShader.GetUniform("view"), 1, GL_FALSE, value_ptr(view));
 
-        glBindVertexArray(VAO);
+        model = mat4();
+        model = translate(model, lightPos);
+        model = scale(model, vec3(0.2f));
+        glUniformMatrix4fv(lampShader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
 
-        for (int i = 0; i < 10; i++)
-        {
-            glm::mat4 model;
-            model = glm::translate(model, cubePositions[i]);
-            GLfloat angle = 20.0f * i;
-            model = glm::rotate(model, (GLfloat)glfwGetTime() * (GLfloat)sin(i + 1) + angle, glm::vec3(1.0f, 0.3f, 0.5f));
-
-            glUniformMatrix4fv(shader.GetUniform("model"), 1, GL_FALSE, glm::value_ptr(model));
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
         // Swap buffers
@@ -259,14 +231,12 @@ int main()
     }
 
     // Clean up resources
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &containerVAO);
     glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
     return 0;
 }
-
-bool keys[512];
 
 void do_movement()
 {
@@ -309,22 +279,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-bool firstMouse = true;
-
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
     {
-        lastX = xpos;
-        lastY = ypos;
+        last.MouseX = xpos;
+        last.MouseY = ypos;
         firstMouse = false;
     }
 
-    GLfloat xoffset = xpos - lastX;
-    GLfloat yoffset = lastY - ypos; // Reversed since y coordinates range from bottom to top
+    GLfloat xoffset = xpos - last.MouseX;
+    GLfloat yoffset = last.MouseY - ypos; // Reversed since y coordinates range from bottom to top
 
-    lastX = xpos;
-    lastY = ypos;
+    last.MouseX = xpos;
+    last.MouseY = ypos;
 
     camera.ProcessEyeMovement(xoffset, yoffset);
 }
