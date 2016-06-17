@@ -175,6 +175,13 @@ int main()
         vec3(-1.3f,  1.0f, -1.5f)
     };
 
+    vec3 pointLightPositions[] = {
+        vec3( 0.7f,  0.2f,  2.0f),
+        vec3( 2.3f, -3.3f, -4.0f),
+        vec3(-4.0f,  2.0f, -12.0f),
+        vec3( 0.0f,  0.0f, -3.0f)
+    };
+
     // Enter the game loop
     cout << "Game started!" << endl;
 
@@ -211,15 +218,38 @@ int main()
         glUniform3f(shader.GetUniform("material.specular"), 0.04f, 0.7f, 0.7f);
         glUniform1f(shader.GetUniform("material.shininess"), 10.0f);
 
-        glUniform3f(shader.GetUniform("light.position"), lightPos.x, lightPos.y, lightPos.z);
+        
+        glUniform3f(shader.GetUniform("pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
+        glUniform3f(shader.GetUniform("pointLights[0].ambient"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[0].constant"), 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[0].linear"), 0.9f);
+        glUniform1f(shader.GetUniform("pointLights[0].quadratic"), 0.032f);
 
-        glUniform3f(shader.GetUniform("light.ambient"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(shader.GetUniform("light.diffuse"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(shader.GetUniform("light.specular"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
+        glUniform3f(shader.GetUniform("pointLights[1].ambient"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[1].diffuse"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[1].constant"), 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[1].linear"), 0.9f);
+        glUniform1f(shader.GetUniform("pointLights[1].quadratic"), 0.032f);
 
-        glUniform1f(shader.GetUniform("light.constant"), 1.0f);
-        glUniform1f(shader.GetUniform("light.linear"), 0.9f);
-        glUniform1f(shader.GetUniform("light.quadratic"), 0.032f);
+        glUniform3f(shader.GetUniform("pointLights[2].position"), pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z);
+        glUniform3f(shader.GetUniform("pointLights[2].ambient"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[2].diffuse"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[2].specular"), 1.0f, 1.0f, 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[2].constant"), 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[2].linear"), 0.9f);
+        glUniform1f(shader.GetUniform("pointLights[2].quadratic"), 0.032f);
+
+        glUniform3f(shader.GetUniform("pointLights[3].position"), pointLightPositions[3].x, pointLightPositions[3].y, pointLightPositions[3].z);
+        glUniform3f(shader.GetUniform("pointLights[3].ambient"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[3].diffuse"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("pointLights[3].specular"), 1.0f, 1.0f, 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[3].constant"), 1.0f);
+        glUniform1f(shader.GetUniform("pointLights[3].linear"), 0.9f);
+        glUniform1f(shader.GetUniform("pointLights[3].quadratic"), 0.032f);
 
         glUniform3f(shader.GetUniform("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
@@ -246,17 +276,18 @@ int main()
 
         // Draw lamp
         lampShader.Use();
-
         glUniformMatrix4fv(lampShader.GetUniform("projection"), 1, GL_FALSE, value_ptr(projection));
         glUniformMatrix4fv(lampShader.GetUniform("view"), 1, GL_FALSE, value_ptr(view));
-
-        mat4 model;
-        model = translate(model, lightPos);
-        model = scale(model, vec3(0.2f));
-        glUniformMatrix4fv(lampShader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
-
         glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (int i = 0; i < 4; i++)
+        {
+            mat4 model;
+            model = translate(model, pointLightPositions[i]);
+            model = scale(model, vec3(0.2f));
+            glUniformMatrix4fv(lampShader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         glBindVertexArray(0);
 
         // Swap buffers
