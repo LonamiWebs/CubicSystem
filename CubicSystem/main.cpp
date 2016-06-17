@@ -192,10 +192,17 @@ int main()
 
         // Draw our objects
         shader.Use();
-        glUniform3f(shader.GetUniform("objectColor"), 1.0f, 0.5f, 0.31f);
-        glUniform3f(shader.GetUniform("lightColor"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(shader.GetUniform("lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        // cyan rubber 	 	 		 	 	 	 	 	
+        glUniform3f(shader.GetUniform("material.ambient"), 0.0f, 0.05f, 0.05f);
+        glUniform3f(shader.GetUniform("material.diffuse"), 0.4f, 0.5f, 0.5f);
+        glUniform3f(shader.GetUniform("material.specular"), 0.04f, 0.7f, 0.7f);
+        glUniform1f(shader.GetUniform("material.shininess"), 10.0f);
 
+        glUniform3f(shader.GetUniform("light.ambient"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("light.diffuse"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(shader.GetUniform("light.specular"), 1.0f, 1.0f, 1.0f);
+
+        glUniform3f(shader.GetUniform("lightPos"), lightPos.x, lightPos.y, lightPos.z);
         glUniform3f(shader.GetUniform("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
         // Create camera transformations
