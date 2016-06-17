@@ -162,6 +162,19 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    vec3 cubePositions[] = {
+        vec3( 0.0f,  0.0f,  0.0f),
+        vec3( 2.0f,  5.0f, -15.0f),
+        vec3(-1.5f, -2.2f, -2.5f),
+        vec3(-3.8f, -2.0f, -12.3f),
+        vec3( 2.4f, -0.4f, -3.5f),
+        vec3(-1.7f,  3.0f, -7.5f),
+        vec3( 1.3f, -2.0f, -2.5f),
+        vec3( 1.5f,  2.0f, -2.5f),
+        vec3( 1.5f,  0.2f, -1.5f),
+        vec3(-1.3f,  1.0f, -1.5f)
+    };
+
     // Enter the game loop
     cout << "Game started!" << endl;
 
@@ -184,7 +197,7 @@ int main()
 
 
         GLfloat radius = 4.0f;
-        GLfloat lightSpeed = 0.5f; // No, not that light speed
+        GLfloat lightSpeed = 2.0f; // No, not that light speed
         vec3 lightPos;
         lightPos.x = cos(glfwGetTime() * lightSpeed) * radius;
         lightPos.y = 1.2f;
@@ -198,24 +211,37 @@ int main()
         glUniform3f(shader.GetUniform("material.specular"), 0.04f, 0.7f, 0.7f);
         glUniform1f(shader.GetUniform("material.shininess"), 10.0f);
 
+        glUniform3f(shader.GetUniform("light.position"), lightPos.x, lightPos.y, lightPos.z);
+
         glUniform3f(shader.GetUniform("light.ambient"), 1.0f, 1.0f, 1.0f);
         glUniform3f(shader.GetUniform("light.diffuse"), 1.0f, 1.0f, 1.0f);
         glUniform3f(shader.GetUniform("light.specular"), 1.0f, 1.0f, 1.0f);
 
-        glUniform3f(shader.GetUniform("lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        glUniform1f(shader.GetUniform("light.constant"), 1.0f);
+        glUniform1f(shader.GetUniform("light.linear"), 0.9f);
+        glUniform1f(shader.GetUniform("light.quadratic"), 0.032f);
+
         glUniform3f(shader.GetUniform("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
         // Create camera transformations
         mat4 view = camera.GetViewMatrix();
         mat4 projection = perspective(camera.Zoom, viewportWidth / (GLfloat)viewportHeight, 0.1f, 100.0f);
-        mat4 model; // Identity (don't perform any operation)
 
-                    // Set them and draw
+        // Set them and draw
         glUniformMatrix4fv(shader.GetUniform("projection"), 1, GL_FALSE, value_ptr(projection));
         glUniformMatrix4fv(shader.GetUniform("view"), 1, GL_FALSE, value_ptr(view));
-        glUniformMatrix4fv(shader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
+
         glBindVertexArray(containerVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (int i = 0; i < 10; i++)
+        {
+            mat4 model;
+            model = translate(model, cubePositions[i]);
+            GLfloat angle = 20.0f * i;
+            model = rotate(model, angle, vec3(1.0f, 0.3f, 0.5f));
+            glUniformMatrix4fv(shader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         glBindVertexArray(0);
 
         // Draw lamp
@@ -224,7 +250,7 @@ int main()
         glUniformMatrix4fv(lampShader.GetUniform("projection"), 1, GL_FALSE, value_ptr(projection));
         glUniformMatrix4fv(lampShader.GetUniform("view"), 1, GL_FALSE, value_ptr(view));
 
-        model = mat4();
+        mat4 model;
         model = translate(model, lightPos);
         model = scale(model, vec3(0.2f));
         glUniformMatrix4fv(lampShader.GetUniform("model"), 1, GL_FALSE, value_ptr(model));
