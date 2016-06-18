@@ -19,7 +19,7 @@ public:
     static Shader GetShader(std::string name);
 
     // Loads and generates textures from files
-    static Texture2D LoadShader(const GLchar* file, GLboolean alpha, std::string name);
+    static Texture2D LoadTexture(const GLchar* file, GLboolean alpha, std::string name);
     // Retrieves a stored texture
     static Texture2D GetTexture(std::string name);
 

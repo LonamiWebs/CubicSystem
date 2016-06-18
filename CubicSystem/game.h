@@ -14,8 +14,11 @@ class Game
 public:
     // State
     GameState State;
-    GLboolean Keys[256];
     GLuint Width, Height;
+
+    // Input related state
+    GLboolean Keys[256];
+    GLfloat MouseXOffset, MouseYOffset;
 
     // Constructor and destructor
     Game(GLuint width, GLuint height);

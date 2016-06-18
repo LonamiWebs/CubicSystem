@@ -53,10 +53,11 @@ int main()
     glfwGetFramebufferSize(window, &viewportWidth, &viewportHeight);
 
     glViewport(0, 0, viewportWidth, viewportHeight);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
     cout << "Initializing game..." << endl;
+    game = Game(viewportWidth, viewportHeight);
     game.Init();
 
     GLfloat deltaTime = 0.0f;
@@ -94,10 +95,6 @@ int main()
         glfwSwapBuffers(window);
     }
 
-    // Clean up resources
-    //glDeleteVertexArrays(1, &containerVAO);
-    //glDeleteBuffers(1, &VBO);
-
     glfwTerminate();
     return 0;
 }
@@ -121,22 +118,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    //bool firstMouse;
-    //double lastMouseX, lastMouseY;
-    //if (firstMouse)
-    //{
-    //    lastMouseX = xpos;
-    //    lastMouseY = ypos;
-    //    firstMouse = false;
-    //}
+    if (firstMouse)
+    {
+        lastMouseX = xpos;
+        lastMouseY = ypos;
+        firstMouse = false;
+    }
 
-    //GLfloat xoffset = xpos - lastMouseX;
-    //GLfloat yoffset = lastMouseY - ypos; // Reversed since y coordinates range from bottom to top
+    GLfloat xoffset = xpos - lastMouseX;
+    GLfloat yoffset = lastMouseY - ypos; // Reversed since y coordinates range from bottom to top
 
-    //lastMouseX = xpos;
-    //lastMouseY = ypos;
+    lastMouseX = xpos;
+    lastMouseY = ypos;
 
-    //camera.ProcessEyeMovement(xoffset, yoffset);
+    game.MouseXOffset = xoffset;
+    game.MouseYOffset = yoffset;
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)

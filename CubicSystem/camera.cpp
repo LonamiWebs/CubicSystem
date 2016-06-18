@@ -39,6 +39,9 @@ void Camera::ProcessMovement(CameraMovement direction, GLfloat deltaTime)
 
 void Camera::ProcessEyeMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch)
 {
+    if (xoffset == 0 && yoffset == 0)
+        return;
+
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
 

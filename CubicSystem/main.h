@@ -18,4 +18,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // Fields
 Game game(WIDTH, HEIGHT);
 
+bool firstMouse = true;
+double lastMouseX, lastMouseY;
+
 // Thanks a lot to learnopengl.com \(^-^)/
