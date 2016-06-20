@@ -121,19 +121,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="block.cpp" />
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="cube_renderer.cpp" />
+    <ClCompile Include="renderer.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="world_loader.cpp" />
     <ClCompile Include="resource_manager.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="block.h" />
     <ClInclude Include="camera.h" />
-    <ClInclude Include="cube_renderer.h" />
+    <ClInclude Include="renderer.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="world.h" />
+    <ClInclude Include="world_loader.h" />
     <ClInclude Include="resource_manager.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="texture.h" />

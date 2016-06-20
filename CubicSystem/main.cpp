@@ -124,15 +124,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         lastMouseY = ypos;
         firstMouse = false;
     }
-
     GLfloat xoffset = xpos - lastMouseX;
     GLfloat yoffset = lastMouseY - ypos; // Reversed since y coordinates range from bottom to top
 
     lastMouseX = xpos;
     lastMouseY = ypos;
 
-    game.MouseXOffset = xoffset;
-    game.MouseYOffset = yoffset;
+    game.MouseXOffset += xoffset;
+    game.MouseYOffset += yoffset;
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)

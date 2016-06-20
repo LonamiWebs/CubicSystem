@@ -1,36 +1,56 @@
-#include "cube_renderer.h"
+#include "renderer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include "renderer.h"
 
-CubeRenderer::CubeRenderer(Shader &shader)
+Renderer::Renderer(Shader &shader)
 {
     this->shader = shader;
     initRenderData();
 }
 
-CubeRenderer::~CubeRenderer()
+Renderer::~Renderer()
 {
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteBuffers(1, &VBO);
 }
 
-void CubeRenderer::DrawCube(Texture2D& texture, glm::vec3 position)
+void Renderer::DrawWorld(World world)
+{
+    shader.Use();
+
+    for (auto block : world.Blocks)
+    {
+        glm::mat4 model;
+        model = glm::translate(model, block.Position);
+        shader.SetMatrix4("model", model);
+
+        glActiveTexture(GL_TEXTURE0);
+        block.Texture.Bind();
+
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+    }
+}
+
+void Renderer::DrawBlock(Block block)
 {
     shader.Use();
 
     glm::mat4 model;
-    model = glm::translate(model, position);
+    model = glm::translate(model, block.Position);
     shader.SetMatrix4("model", model);
 
     glActiveTexture(GL_TEXTURE0);
-    texture.Bind();
+    block.Texture.Bind();
 
     glBindVertexArray(cubeVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 }
 
-void CubeRenderer::initRenderData()
+void Renderer::initRenderData()
 {
     GLuint VBO;
     GLfloat vertices[] = {

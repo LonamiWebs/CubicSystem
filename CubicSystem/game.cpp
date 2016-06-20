@@ -1,11 +1,13 @@
 #include "game.h"
+#include "camera.h"
+#include "world_loader.h"
+#include "renderer.h"
 #include "resource_manager.h"
 
-#include "camera.h"
-#include "cube_renderer.h"
-
 Camera camera;
-CubeRenderer* renderer;
+Renderer* renderer;
+
+World world;
 
 Game::Game(GLuint width, GLuint height)
     : State(GAME_ACTIVE), Keys(), Width(width), Height(height) { }
@@ -27,10 +29,13 @@ void Game::Init()
     shader.SetMatrix4("projection", projection);
 
     // Set renderer specific fields
-    renderer = new CubeRenderer(shader);
+    renderer = new Renderer(shader);
 
     // Load textures
-    ResourceManager::LoadTexture("../CubicSystem/images/stone.png", GL_FALSE, "stone");
+    ResourceManager::LoadTexture("../CubicSystem/images/rock.png", GL_FALSE, "rock");
+
+    // Load map
+    world = WorldLoader::Load("../CubicSystem/maps/map.csm");
 }
 
 void Game::ProcessInput(GLfloat dt)
@@ -63,7 +68,7 @@ void Game::Update(GLfloat dt)
 
 void Game::Render()
 {
-    renderer->DrawCube(ResourceManager::GetTexture("stone"), glm::vec3(0.0f, 0.0f, 0.0f));
+    renderer->DrawWorld(world);
 }
 
 
