@@ -3,7 +3,8 @@
 Block::Block(glm::vec3 position, int id, int subId)
     : Position(position), ID(id), SubID(subId)
 {
-    Texture = ResourceManager::GetTexture(IDToName(id));
+    if (ID != -1)
+        Texture = ResourceManager::GetTexture(IDToName(id));
 }
 
 std::string Block::IDToName(int id)

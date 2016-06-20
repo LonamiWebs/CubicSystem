@@ -53,7 +53,7 @@ int main()
     glfwGetFramebufferSize(window, &viewportWidth, &viewportHeight);
 
     glViewport(0, 0, viewportWidth, viewportHeight);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
     cout << "Initializing game..." << endl;

@@ -10,8 +10,8 @@ public:
     Renderer(Shader &shader);
     ~Renderer();
 
-    void DrawWorld(World world);
-    void DrawBlock(Block block);
+    void DrawWorld(World world, bool useShader = true);
+    void DrawBlock(Block block, bool useShader = true);
 
 private:
     Shader shader;
