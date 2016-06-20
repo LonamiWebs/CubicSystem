@@ -23,6 +23,5 @@ You also do need the following includes:
 ### OK thanks
 No.
 
-https://github.com/LonamiWebs/
 ### How does this... thing look like so far?
 ![Game teaser preview](https://raw.githubusercontent.com/LonamiWebs/CubicSystem/master/ProjectImages/preview.png "Game teaser")
