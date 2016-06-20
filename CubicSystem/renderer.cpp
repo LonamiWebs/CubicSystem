@@ -19,6 +19,8 @@ void Renderer::DrawWorld(World world, bool useShader)
 {
     if (useShader)
         shader.Use();
+    
+    shader.SetVector3f("sunlightDir", glm::normalize(glm::vec3(0.2f, 1.0f, 0.3f)));
 
     for (auto block : world.Blocks)
         DrawBlock(block, false);

@@ -35,7 +35,7 @@ void Game::Init()
     ResourceManager::LoadTexture("../CubicSystem/images/rock.png", GL_FALSE, "rock");
 
     // Load map
-    world = WorldLoader::Load("../CubicSystem/maps/map.csm");
+    world = WorldLoader::Load("../CubicSystem/maps/map2.csm");
 }
 
 void Game::ProcessInput(GLfloat dt)
@@ -61,6 +61,8 @@ void Game::ProcessInput(GLfloat dt)
         camera.ProcessZoom(-0.1f);
 }
 
+
+#include <iostream>
 void Game::Update(GLfloat dt)
 {
     ResourceManager::GetShader("block").SetMatrix4("view", camera.GetViewMatrix(), GL_TRUE);
@@ -70,5 +72,3 @@ void Game::Render()
 {
     renderer->DrawWorld(world);
 }
-
-
