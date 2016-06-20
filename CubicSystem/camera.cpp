@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include <math.h>
+
 Camera::Camera(
     glm::vec3 position,
     glm::vec3 up,
@@ -37,6 +39,7 @@ void Camera::ProcessMovement(CameraMovement direction, GLfloat deltaTime)
     }
 }
 
+#include <iostream>
 void Camera::ProcessEyeMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch)
 {
     if (xoffset == 0 && yoffset == 0)
@@ -45,7 +48,10 @@ void Camera::ProcessEyeMovement(GLfloat xoffset, GLfloat yoffset, GLboolean cons
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
 
-    Yaw += xoffset;
+    // If we don't constrain the yaw to only use values between 0-360
+    // we would lose floating precission with very high values, hence
+    // the movement would look like big "steps" instead a smooth one!
+    Yaw = std::fmod((Yaw + xoffset), (GLfloat)360.0f);
     Pitch += yoffset;
 
     if (constrainPitch)

@@ -19,16 +19,12 @@ World WorldLoader::Load(const char* filename)
 
         result.Blocks.resize(blocks);
 
-        std::cout << "LOADING " << blocks << " BLOCKS" << std::endl;
-
         float x, y, z;
         for (int i = 0; i < blocks; i++)
         {
             file.read((char*)&x, sizeof(float));
             file.read((char*)&y, sizeof(float));
             file.read((char*)&z, sizeof(float));
-
-            std::cout << "LOADED BLOCK AT " << x << ", " << y << ", " << z << std::endl;
 
             // For now, they all have the same ID (0)
             result.Blocks.push_back(*new Block(glm::vec3(x, y, z), 0, 0));
